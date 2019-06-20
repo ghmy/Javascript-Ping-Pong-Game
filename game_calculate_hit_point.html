@@ -165,12 +165,12 @@ function draw(){
 	if(showWinningScreen){
 		canvasContext.fillStyle = 'white';
 		if(player1Score >= WINNING_SCORE){
-			canvasContext.fillText('Kazandiniz!', 350, 100);
+			canvasContext.fillText('You won!', 350, 100);
 		} else if(player2Score >= WINNING_SCORE){
-			canvasContext.fillText('Bilgisayar kazandi!', 350, 200);
+			canvasContext.fillText('You lost!', 350, 200);
 		}
 		
-		canvasContext.fillText('Tekrar oynamak için tiklayin', 350, 500);
+		canvasContext.fillText('Click to play again', 350, 500);
 		return;
 	}
 	drawPaddle();
@@ -190,8 +190,8 @@ function drawNet(){
 }
 
 function drawScore(){
-	canvasContext.fillText('Skorunuz : ' + player1Score, 100, 100);
-	canvasContext.fillText('Bilgisayar Skoru : ' + player2Score, canvas.width - 200, 100);
+	canvasContext.fillText('Your Score : ' + player1Score, 100, 100);
+	canvasContext.fillText('Computer Score : ' + player2Score, canvas.width - 200, 100);
 }
 
 function drawPaddle(){
