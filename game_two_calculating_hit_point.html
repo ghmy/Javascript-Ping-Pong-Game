@@ -9,7 +9,7 @@ var canvas;
 var canvasContext;
 var ballX = 50;
 var ballY = 50;
-var ballSpeedX = 25;
+var ballSpeedX = 15;
 var ballSpeedY = 5;
 
 var player1Score = 0;
@@ -194,9 +194,9 @@ function draw(){
 	if(showWinningScreen){
 		canvasContext.fillStyle = 'white';
 		if(player1Score >= WINNING_SCORE){
-			canvasContext.fillText('AI 1 won!', 350, 100);
+			canvasContext.fillText('Paddle 1 won!', 350, 100);
 		} else if(player2Score >= WINNING_SCORE){
-			canvasContext.fillText('AI 2 won!', 350, 200);
+			canvasContext.fillText('Paddle 2 won!', 350, 200);
 		}
 		
 		canvasContext.fillText('Click to play again', 350, 500);
@@ -219,8 +219,8 @@ function drawNet(){
 }
 
 function drawScore(){
-	canvasContext.fillText('AI 1 Score : ' + player1Score, 100, 100);
-	canvasContext.fillText('AI 2 Score : ' + player2Score, canvas.width - 200, 100);
+	canvasContext.fillText('Paddle 1 Score : ' + player1Score, 100, 100);
+	canvasContext.fillText('Paddle 2 Score : ' + player2Score, canvas.width - 200, 100);
 }
 
 function drawPaddle(){
