@@ -1,0 +1,219 @@
+<html>
+<b>Mehmet Yesilyurt - Udemy</b>
+<br/><br/><br/>
+<canvas id="gameCanvas" width="800" height="600">
+</canvas>
+
+<script>
+var canvas;
+var canvasContext;
+var ballX = 50;
+var ballY = 50;
+var ballSpeedX = 5;
+var ballSpeedY = 5;
+
+var player1Score = 0;
+var player2Score = 0;
+const WINNING_SCORE = 3;
+
+var showWinningScreen = false;
+var calculateForPlayer2 = true;
+var hitPointY = 250;
+
+var paddle1Y = 250;
+var paddle2Y = 250;
+
+const PADDLE_THICKNESS = 10;
+const PADDLE_HEIGHT = 100;
+
+const BALL_RADIUS = 10;
+
+function calculateMousePos(evt){
+	var rect = canvas.getBoundingClientRect();
+	var root = document.documentElement;
+	var mouseX = evt.clientX - rect.left - root.scrollLeft;
+	var mouseY = evt.clientY - rect.top - root.scrollTop;
+	return{
+		x:mouseX,
+		y:mouseY
+	}
+}
+
+window.onload = function() {
+	canvas = document.getElementById('gameCanvas');
+	canvasContext = canvas.getContext('2d');
+	canvasContext.font = "15px Arial";
+	
+	setRandomYSpeed();
+	var framesPerSecond = 60;
+	setInterval(function(){
+		move();
+		draw();
+	}, 1000 / framesPerSecond);
+
+	canvas.addEventListener('mousemove', function(evt){
+		var mousePos = calculateMousePos(evt);
+		paddle1Y = mousePos.y - PADDLE_HEIGHT/2;
+		if(paddle1Y + PADDLE_HEIGHT >= canvas.height)
+			paddle1Y = canvas.height - PADDLE_HEIGHT;
+		if(paddle1Y <= 0)
+			paddle1Y = 0;
+	});
+	canvas.addEventListener('click', function(){
+		if(showWinningScreen) {
+			player1Score = 0;
+			player2Score = 0;
+			showWinningScreen = false;
+		}
+	});
+}
+
+function calculateHitPoint(){
+	if(calculateForPlayer2){
+		hitPointY = ballSpeedY * (canvas.width - PADDLE_THICKNESS - ballX)/ballSpeedX + ballY; 
+		
+		if(hitPointY > canvas.height || hitPointY < 0){
+			if(hitPointY < 0)
+				hitPointY = -hitPointY;
+			var hitCount = Math.floor(hitPointY / canvas.height);
+			if(hitCount % 2 == 0)
+				hitPointY = hitPointY % canvas.height;	
+			else
+				hitPointY = canvas.height - hitPointY % canvas.height;
+		}
+		calculateForPlayer2 = false;
+	}
+}
+
+function computerMovement(){
+	calculateHitPoint();
+	var paddle2YCenter = paddle2Y + PADDLE_HEIGHT/2;
+	/*if(paddle2YCenter < hitPointY - 6){
+		paddle2Y += 10;
+	}
+	if(paddle2YCenter > hitPointY + 6){
+		paddle2Y -= 10;
+	}*/
+	if(paddle2YCenter < hitPointY - PADDLE_HEIGHT)
+		paddle2Y += 20;
+	else if(paddle2YCenter < hitPointY - PADDLE_HEIGHT / 4)
+		paddle2Y += 10;
+	if(paddle2YCenter > hitPointY + PADDLE_HEIGHT)
+		paddle2Y -= 20;
+	else if(paddle2YCenter > hitPointY + PADDLE_HEIGHT / 4)
+		paddle2Y -= 10;
+	if(paddle2Y < 0)
+		paddle2Y = 0;
+	if(paddle2Y > canvas.height - PADDLE_HEIGHT)
+		paddle2Y = canvas.height - PADDLE_HEIGHT;
+}
+
+function move(){
+	if(showWinningScreen){
+		return;
+	}
+
+	computerMovement();
+	var deltaY;
+	ballX = ballX + ballSpeedX;
+	if(ballX <= PADDLE_THICKNESS + BALL_RADIUS 
+	&& ballY > paddle1Y && ballY < paddle1Y + PADDLE_HEIGHT){
+		ballSpeedX = -ballSpeedX;
+		deltaY = ballY - (paddle1Y + PADDLE_HEIGHT/2);
+		ballSpeedY = deltaY * 0.3;
+		calculateForPlayer2 = true;
+	}
+	else if(ballX <= BALL_RADIUS){
+		player2Score++;
+		ballReset();
+	}
+	if(ballX >= canvas.width - PADDLE_THICKNESS - BALL_RADIUS 
+	&& ballY > paddle2Y && ballY < paddle2Y + PADDLE_HEIGHT){
+		ballSpeedX = -ballSpeedX;
+		deltaY = ballY - (paddle2Y + PADDLE_HEIGHT/2);
+		ballSpeedY = deltaY * 0.3;
+	}
+	else if(ballX >= canvas.width - BALL_RADIUS){
+		player1Score++;
+		ballReset();		
+	}
+
+	ballY = ballY + ballSpeedY;
+	if(ballY >= canvas.height - BALL_RADIUS || ballY <= BALL_RADIUS){
+		ballSpeedY = -ballSpeedY;
+	}		
+}
+
+function ballReset(){
+	if(player1Score >= WINNING_SCORE 
+		|| player2Score >= WINNING_SCORE){
+		showWinningScreen = true;
+	}
+	ballSpeedX = -ballSpeedX;
+	setRandomYSpeed();
+	ballX = canvas.width/2;
+	ballY = canvas.height/2;
+	calculateForPlayer2 = true;
+}
+
+function setRandomYSpeed(){
+	ballSpeedY = Math.floor(Math.random() * 11) - 5;
+}
+
+function draw(){
+	drawBackground();
+	if(showWinningScreen){
+		canvasContext.fillStyle = 'white';
+		if(player1Score >= WINNING_SCORE){
+			canvasContext.fillText('Kazandiniz!', 350, 100);
+		} else if(player2Score >= WINNING_SCORE){
+			canvasContext.fillText('Bilgisayar kazandi!', 350, 200);
+		}
+		
+		canvasContext.fillText('Tekrar oynamak için tiklayin', 350, 500);
+		return;
+	}
+	drawPaddle();
+	drawBall();
+	drawNet();
+	drawScore();
+}
+
+function drawBackground(){
+	colorRect(0,0, canvas.width, canvas.height, 'black')
+}
+
+function drawNet(){
+	for(var i = 0; i < canvas.height; i+= 40){
+		colorRect(canvas.width/2 - 1, i + 5, 2, 30, 'white');
+	}
+}
+
+function drawScore(){
+	canvasContext.fillText('Skorunuz : ' + player1Score, 100, 100);
+	canvasContext.fillText('Bilgisayar Skoru : ' + player2Score, canvas.width - 200, 100);
+}
+
+function drawPaddle(){
+	colorRect(0, paddle1Y, PADDLE_THICKNESS, PADDLE_HEIGHT, 'white');
+	colorRect(canvas.width - PADDLE_THICKNESS, paddle2Y , PADDLE_THICKNESS, PADDLE_HEIGHT, 'white');
+}
+
+function drawBall(){
+	colorCircle(ballX, ballY, BALL_RADIUS, 'white');
+}
+
+function colorRect(leftX, topX, width, height, drawColor){
+	canvasContext.fillStyle = drawColor;
+	canvasContext.fillRect(leftX, topX, width, height);
+}
+
+function colorCircle(centerX, centerY, radius, drawColor){
+	canvasContext.fillStyle = drawColor;
+	canvasContext.beginPath();
+	canvasContext.arc(centerX, centerY, radius, 0, Math.PI*2, true);
+	canvasContext.fill();
+}
+</script>
+
+</html>
